@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yiğit Tavukçuluk - Mobil Sipariş</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 pb-44">
+
+    <!-- Üst Başlık (Görseldeki Gibi - Ok ve 3 Nokta Kaldırıldı) -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+        <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-tr from-red-600 to-red-500 rounded-2xl flex items-center justify-center text-white shadow-md shadow-red-500/20">
+                    <i data-lucide="utensils" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base text-gray-900 leading-tight">Yiğit Tavukçuluk</h1>
+                    <p class="text-xs text-red-600 font-semibold flex items-center gap-1 mt-0.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                        Taze Kasap Paket Servis
+                    </p>
+                </div>
+            </div>
+            
+            <a href="tel:905462784136" class="w-10 h-10 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-center text-gray-700 hover:bg-red-50 hover:text-red-600 transition">
+                <i data-lucide="phone" class="w-4 h-4"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Ana İçerik -->
+    <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+
+        <!-- Banner (Günlük Taze Kesim - 21:00 Güncellendi) -->
+        <div class="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-500 to-amber-600 rounded-3xl p-5 text-white shadow-xl shadow-red-600/15">
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+            <span class="inline-block bg-white/20 backdrop-blur-md text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">
+                GÜNLÜK TAZE KESİM
+            </span>
+            <h2 class="text-xl font-black tracking-tight leading-snug">Kapınıza Gelen Doğal Lezzet</h2>
+            <p class="text-xs text-red-100 mt-1 font-medium leading-relaxed">
+                Saat 21:00'e kadar verilen siparişler aynı gün adrese teslim edilir.
+            </p>
+        </div>
+
+        <!-- Minimum Sipariş Durum Kutusu -->
+        <div class="bg-white border border-gray-100 rounded-3xl p-4 shadow-sm space-y-3">
+            <div class="flex items-center justify-between text-xs font-bold">
+                <span class="text-gray-700 flex items-center gap-1.5">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-red-600"></i>
+                    Min. Sipariş Tutarı: <span class="text-gray-900">1000 TL</span>
+                </span>
+                <span id="remaining-badge" class="bg-red-50 text-red-600 px-2.5 py-1 rounded-full">1000 TL kaldı</span>
+            </div>
+            
+            <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-red-600 to-amber-500 h-full w-0 transition-all duration-300 rounded-full"></div>
+            </div>
+
+            <div id="limit-warning-box" class="bg-amber-50 border border-amber-100/80 rounded-2xl p-3 flex items-start gap-2.5 text-amber-800 text-xs">
+                <i data-lucide="alert-circle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+                <span id="limit-warning-text">Sipariş verebilmek için sepetinize <strong class="font-bold">1000 TL</strong> daha ürün eklemelisiniz.</span>
+            </div>
+        </div>
+
+        <!-- Arama Çubuğu -->
+        <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 absolute left-4 top-3.5 text-gray-400"></i>
+            <input type="text" id="search-input" oninput="filterProducts()" placeholder="Ürün ara (örn: bonfile, kanat)..." class="w-full pl-11 pr-4 py-3 bg-white border border-gray-100 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 shadow-sm transition">
+        </div>
+
+        <!-- Ürünler Başlığı -->
+        <div class="flex items-center justify-between pt-1">
+            <h3 class="font-extrabold text-gray-900 text-base">Ürünlerimiz</h3>
+            <span id="product-count-badge" class="text-xs font-bold text-gray-400">8 Çeşit</span>
+        </div>
+
+        <!-- Ürün Listesi Grid -->
+        <div id="product-list" class="space-y-3 pb-10">
+            <!-- Dinamik Ürünler -->
+        </div>
+    </main>
+
+    <!-- Sabit Alt Sipariş Özeti Çubuğu -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] p-4 z-20">
+        <div class="max-w-md mx-auto space-y-3">
+            
+            <div class="bg-red-50/80 border border-red-100 rounded-2xl px-3.5 py-2 flex items-center justify-between text-xs">
+                <span class="font-bold text-red-700 flex items-center gap-1.5">
+                    <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                    Minimum Sipariş Tutarı: 1000 TL
+                </span>
+                <span id="bottom-limit-status" class="font-extrabold text-red-600">1000 TL Eksik</span>
+            </div>
+
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Toplam Tutar</div>
+                    <div id="bottom-bar-total" class="text-xl font-black text-gray-900 tracking-tight">0 TL</div>
+                </div>
+                
+                <button id="checkout-btn" onclick="openCartModal()" disabled class="flex-1 bg-gray-100 text-gray-400 font-extrabold py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 cursor-not-allowed transition shadow-sm text-xs">
+                    <span>Siparişi Tamamla</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sepet / Sipariş Tamamlama Modalı -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            
+            <!-- Modal Başlık -->
+            <div class="p-4 bg-red-600 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    <h3 class="font-extrabold text-sm tracking-wide">Sipariş Özeti ve Teslimat</h3>
+                </div>
+                <button onclick="closeCartModal()" class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Modal İçeriği (Kaydırılabilir) -->
+            <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
+                
+                <!-- Sepet Ürünleri -->
+                <div id="cart-items" class="divide-y divide-gray-100">
+                    <!-- Ürünler -->
+                </div>
+
+                <!-- Modal İçi Limit Durumu -->
+                <div id="modal-limit-warning" class="bg-red-50 border border-red-100 rounded-2xl p-3 text-red-700 font-medium flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0"></i>
+                    <span id="modal-limit-text">1000 TL minimum tutara ulaşmalısınız.</span>
+                </div>
+
+                <!-- Müşteri Bilgileri Formu -->
+                <div class="border-t border-gray-100 pt-4 space-y-3">
+                    <h4 class="font-extrabold text-gray-900 text-sm flex items-center gap-1.5">
+                        <i data-lucide="user-check" class="w-4 h-4 text-red-600"></i> Teslimat Bilgileri
+                    </h4>
+
+                    <div>
+                        <label class="block font-bold text-gray-600 mb-1">Ad Soyad *</label>
+                        <input type="text" id="cust-name" placeholder="Adınız Soyadınız" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:outline-none transition">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-gray-600 mb-1">Telefon Numarası *</label>
+                        <input type="tel" id="cust-phone" value="05462784136" placeholder="05XX XXX XX XX" maxlength="11" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:outline-none transition font-semibold">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-gray-600 mb-1">Açık Adres *</label>
+                        <textarea id="cust-address" rows="2" placeholder="Mahalle, Cadde, Sokak, Bina No, Daire..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:outline-none transition"></textarea>
+                    </div>
+
+                    <!-- Konum Seçimi (Eski Haline Döndürüldü) -->
+                    <div>
+                        <label class="block font-bold text-gray-600 mb-1">Harita Konumu (Opsiyonel)</label>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="getLocation()" id="geo-btn" class="flex-1 bg-gray-100 border border-gray-200 text-gray-700 py-2.5 px-3 rounded-2xl font-bold flex items-center justify-center gap-1.5 hover:bg-gray-200 transition">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-red-600"></i>
+                                <span id="geo-btn-text">Konumumu Bul (GPS)</span>
+                            </button>
+                        </div>
+                        <input type="text" id="cust-map-link" placeholder="Veya Google Maps linki yapıştırın..." class="w-full mt-2 p-2.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500/20 focus:outline-none transition">
+                        <p id="location-status" class="text-[11px] text-emerald-600 font-bold mt-1 hidden flex items-center gap-1">
+                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Konum başarıyla eklendi.
+                        </p>
+                    </div>
+
+                    <!-- Ödeme Yöntemi -->
+                    <div>
+                        <label class="block font-bold text-gray-600 mb-1">Ödeme Yöntemi *</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-2xl cursor-pointer hover:bg-gray-100 transition">
+                                <input type="radio" name="payment" value="Kapıda Nakit" checked class="text-red-600 focus:ring-red-500">
+                                <span class="font-bold text-gray-800">Kapıda Nakit</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-2xl cursor-pointer hover:bg-gray-100 transition">
+                                <input type="radio" name="payment" value="Kapıda Kredi Kartı" class="text-red-600 focus:ring-red-500">
+                                <span class="font-bold text-gray-800">Kapıda Kredi Kartı</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-gray-600 mb-1">Sipariş Notu</label>
+                        <input type="text" id="cust-note" placeholder="Zil çalmayın, kapıya bırakın vb." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:outline-none transition">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Alt WhatsApp Butonu -->
+            <div class="p-4 bg-gray-50 border-t border-gray-100">
+                <button id="send-whatsapp-btn" onclick="submitOrderWhatsApp()" disabled class="w-full bg-gray-200 text-gray-400 font-extrabold py-3.5 rounded-2xl flex items-center justify-center gap-2 cursor-not-allowed transition shadow-sm text-xs">
+                    <i data-lucide="message-circle" class="w-5 h-5"></i>
+                    <span>WhatsApp ile Sipariş Ver</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Mantığı -->
+    <script>
+        const products = [
+            { id: 1, name: "Bütün Piliç", price: 125, unit: "Kg", img: "https://images.unsplash.com/photo-1587593810167-a84920ea0781?auto=format&fit=crop&w=300&q=80" },
+            { id: 2, name: "Piliç Baget", price: 130, unit: "Kg", img: "https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=300&q=80" },
+            { id: 3, name: "Piliç Uçlu Kanat", price: 200, unit: "Kg", img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=300&q=80" },
+            { id: 4, name: "Piliç Izgara Kanat", price: 220, unit: "Kg", img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=300&q=80" },
+            { id: 5, name: "Piliç Pirzola", price: 175, unit: "Kg", img: "https://images.unsplash.com/photo-1603048588665-791ca8aea617?auto=format&fit=crop&w=300&q=80" },
+            { id: 6, name: "Piliç Kalçalı But", price: 120, unit: "Kg", img: "https://images.unsplash.com/photo-1587593810167-a84920ea0781?auto=format&fit=crop&w=300&q=80" },
+            { id: 7, name: "Piliç Bonfile", price: 210, unit: "Kg", img: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=300&q=80" },
+            { id: 8, name: "Piliç Çıtır Kelebek", price: 150, unit: "Kg", img: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=300&q=80" }
+        ];
+
+        const QUANTITY_STEP = 0.5;
+        const MIN_ORDER_AMOUNT = 1000;
+
+        let cart = {}; // { productId: kg }
+        let userLocationLink = "";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderProducts(products);
+            updateCartUI();
+            lucide.createIcons();
+        });
+
+        function renderProducts(items) {
+            const container = document.getElementById("product-list");
+            container.innerHTML = "";
+
+            if (items.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400 text-xs py-8">Aradığınız ürün bulunamadı.</p>`;
+                return;
+            }
+
+            items.forEach(product => {
+                const qty = cart[product.id] || 0;
+                
+                const card = document.createElement("div");
+                card.className = "bg-white p-3.5 rounded-3xl border border-gray-100 shadow-xs flex items-center justify-between gap-3";
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="relative w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 shrink-0">
+                            <img src="${product.img}" alt="${product.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-1 left-1 bg-red-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-md shadow-xs">Taze</span>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-gray-900 text-sm leading-snug">${product.name}</h4>
+                            <div class="mt-1 flex items-baseline gap-1">
+                                <span class="text-red-600 font-black text-sm">${product.price} TL</span>
+                                <span class="text-[11px] text-gray-400 font-semibold">/ ${product.unit}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-end gap-2">
+                        <!-- Sadece Artı Eksi ile miktar değişimi -->
+                        <div class="flex items-center bg-gray-50 border border-gray-200/80 rounded-xl p-0.5">
+                            <button onclick="changeQty(${product.id}, -${QUANTITY_STEP})" class="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-gray-700 font-bold active:scale-95 transition text-xs">
+                                -
+                            </button>
+                            <span class="w-10 text-center text-xs font-black text-gray-800">${qty} kg</span>
+                            <button onclick="changeQty(${product.id}, ${QUANTITY_STEP})" class="w-7 h-7 rounded-lg bg-red-600 shadow-xs flex items-center justify-center text-white font-bold active:scale-95 transition text-xs">
+                                +
+                            </button>
+                        </div>
+
+                        <!-- Sepete Ekle Butonu (Sadece ürün ekler/günceller) -->
+                        <button onclick="addToCartExplicit(${product.id})" class="bg-gray-900 hover:bg-red-600 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1 active:scale-95">
+                            <i data-lucide="shopping-cart" class="w-3 h-3"></i>
+                            <span>Sepete Ekle</span>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function filterProducts() {
+            const query = document.getElementById("search-input").value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
+            renderProducts(filtered);
+        }
+
+        // Sadece + ve - tuşları ile miktar yönetimi
+        function changeQty(id, delta) {
+            const currentQty = cart[id] || 0;
+            const newQty = Math.max(0, parseFloat((currentQty + delta).toFixed(1)));
+            
+            if (newQty === 0) {
+                delete cart[id];
+            } else {
+                cart[id] = newQty;
+            }
+
+            renderProducts(products.filter(p => p.name.toLowerCase().includes(document.getElementById("search-input").value.toLowerCase())));
+            updateCartUI();
+        }
+
+        // Sepete Ekle tuşuna basıldığında minimum 0.5 kg varsayılan atama
+        function addToCartExplicit(id) {
+            if (!cart[id] || cart[id] === 0) {
+                cart[id] = 0.5;
+            }
+            renderProducts(products.filter(p => p.name.toLowerCase().includes(document.getElementById("search-input").value.toLowerCase())));
+            updateCartUI();
+            
+            // Küçük bir görsel geri bildirim efekti veya bildirim verilebilir
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            for (const [id, qty] of Object.entries(cart)) {
+                const product = products.find(p => p.id === parseInt(id));
+                if (product) {
+                    total += product.price * qty;
+                }
+            }
+            return total;
+        }
+
+        function updateCartUI() {
+            const total = calculateTotal();
+            const diff = MIN_ORDER_AMOUNT - total;
+            const isMinReached = total >= MIN_ORDER_AMOUNT;
+
+            // Üst bar güncellemeleri
+            document.getElementById("cart-total-header")?.remove(); // Eğer üstte header cart badge varsa
+            const percentage = Math.min(100, (total / MIN_ORDER_AMOUNT) * 100);
+            document.getElementById("progress-bar").style.width = `${percentage}%`;
+
+            const remainingBadge = document.getElementById("remaining-badge");
+            const limitWarningBox = document.getElementById("limit-warning-box");
+            const limitWarningText = document.getElementById("limit-warning-text");
+            const bottomLimitStatus = document.getElementById("bottom-limit-status");
+            const checkoutBtn = document.getElementById("checkout-btn");
+            const sendWhatsappBtn = document.getElementById("send-whatsapp-btn");
+            const modalLimitWarning = document.getElementById("modal-limit-warning");
+            const modalLimitText = document.getElementById("modal-limit-text");
+
+            document.getElementById("bottom-bar-total").innerText = `${total} TL`;
+
+            if (isMinReached) {
+                remainingBadge.innerText = "Tamamlandı ✓";
+                remainingBadge.className = "bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full font-extrabold";
+
+                limitWarningBox.className = "bg-emerald-50 border border-emerald-100 rounded-2xl p-3 flex items-start gap-2.5 text-emerald-800 text-xs";
+                limitWarningText.innerHTML = `Minimum sipariş limitine ulaşıldı! Siparişinizi hemen tamamlayabilirsiniz.`;
+
+                bottomLimitStatus.innerText = "Limit Sağlandı ✓";
+                bottomLimitStatus.className = "font-extrabold text-emerald-600";
+
+                checkoutBtn.disabled = false;
+                checkoutBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 transition shadow-md shadow-emerald-600/20 text-xs active:scale-98";
+                
+                sendWhatsappBtn.disabled = false;
+                sendWhatsappBtn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition shadow-md shadow-emerald-600/20 text-xs active:scale-98";
+
+                modalLimitWarning.className = "bg-emerald-50 border border-emerald-100 rounded-2xl p-3 text-emerald-700 font-bold flex items-center gap-2";
+                modalLimitText.innerText = "Minimum sipariş tutarı sağlandı. Sipariş verebilirsiniz!";
+            } else {
+                remainingBadge.innerText = `${diff} TL kaldı`;
+                remainingBadge.className = "bg-red-50 text-red-600 px-2.5 py-1 rounded-full font-extrabold";
+
+                limitWarningBox.className = "bg-amber-50 border border-amber-100 rounded-2xl p-3 flex items-start gap-2.5 text-amber-800 text-xs";
+                limitWarningText.innerHTML = `Sipariş verebilmek için sepetinize <strong class="font-bold">${diff} TL</strong> daha ürün eklemelisiniz.`;
+
+                bottomLimitStatus.innerText = `${diff} TL Eksik`;
+                bottomLimitStatus.className = "font-extrabold text-red-600";
+
+                checkoutBtn.disabled = true;
+                checkoutBtn.className = "flex-1 bg-gray-100 text-gray-400 font-extrabold py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 cursor-not-allowed transition text-xs shadow-sm";
+                
+                sendWhatsappBtn.disabled = true;
+                sendWhatsappBtn.className = "w-full bg-gray-200 text-gray-400 font-extrabold py-3.5 rounded-2xl flex items-center justify-center gap-2 cursor-not-allowed transition text-xs shadow-sm";
+
+                modalLimitWarning.className = "bg-red-50 border border-red-100 rounded-2xl p-3 text-red-700 font-medium flex items-center gap-2";
+                modalLimitText.innerText = `1000 TL minimum tutara ulaşmak için ${diff} TL daha ürün eklemelisiniz.`;
+            }
+
+            renderCartItems();
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById("cart-items");
+            container.innerHTML = "";
+
+            if (Object.keys(cart).length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400 text-xs py-4">Sepetiniz henüz boş.</p>`;
+                return;
+            }
+
+            for (const [id, qty] of Object.entries(cart)) {
+                const product = products.find(p => p.id === parseInt(id));
+                if (!product) continue;
+
+                const itemTotal = product.price * qty;
+
+                const itemRow = document.createElement("div");
+                itemRow.className = "py-3 flex items-center justify-between";
+                itemRow.innerHTML = `
+                    <div>
+                        <div class="font-extrabold text-gray-800 text-xs">${product.name}</div>
+                        <div class="text-[11px] text-gray-400 font-medium mt-0.5">${qty} kg x ${product.price} TL</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-black text-gray-900 text-xs">${itemTotal} TL</span>
+                        <button onclick="changeQty(${product.id}, -${qty})" class="w-7 h-7 bg-red-50 text-red-600 rounded-xl flex items-center justify-center hover:bg-red-100 transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(itemRow);
+            }
+            lucide.createIcons();
+        }
+
+        function openCartModal() {
+            const modal = document.getElementById("cart-modal");
+            modal.classList.remove("hidden");
+            setTimeout(() => modal.classList.remove("opacity-0"), 10);
+        }
+
+        function closeCartModal() {
+            const modal = document.getElementById("cart-modal");
+            modal.classList.add("opacity-0");
+            setTimeout(() => modal.classList.add("hidden"), 200);
+        }
+
+        // GPS Konum Alımı
+        function getLocation() {
+            const statusText = document.getElementById("geo-btn-text");
+            const locationStatus = document.getElementById("location-status");
+
+            if (!navigator.geolocation) {
+                alert("Tarayıcınız konum servisini desteklemiyor.");
+                return;
+            }
+
+            statusText.innerText = "Konum Alınıyor...";
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    userLocationLink = `https://maps.google.com/?q=${lat},${lng}`;
+                    
+                    document.getElementById("cust-map-link").value = userLocationLink;
+                    statusText.innerText = "GPS Konumu Alındı ✓";
+                    locationStatus.classList.remove("hidden");
+                },
+                (error) => {
+                    alert("Konum alınamadı. Lütfen tarayıcı konum iznini kontrol edin.");
+                    statusText.innerText = "Konumumu Bul (GPS)";
+                }
+            );
+        }
+
+        function submitOrderWhatsApp() {
+            const total = calculateTotal();
+            if (total < MIN_ORDER_AMOUNT) {
+                alert(`Minimum sipariş tutarı ${MIN_ORDER_AMOUNT} TL'dir.`);
+                return;
+            }
+
+            const name = document.getElementById("cust-name").value.trim();
+            const phone = document.getElementById("cust-phone").value.trim();
+            const address = document.getElementById("cust-address").value.trim();
+            const mapLink = document.getElementById("cust-map-link").value.trim();
+            const payment = document.querySelector('input[name="payment"]:checked').value;
+            const note = document.getElementById("cust-note").value.trim();
+
+            if (!name || !phone || !address) {
+                alert("Lütfen Ad Soyad, Telefon Numarası ve Açık Adres alanlarını eksiksiz doldurunuz.");
+                return;
+            }
+
+            let message = `🥩 *YİĞİT TAVUKÇULUK SİPARİŞİ* 🥩\n\n`;
+            message += `👤 *Müşteri:* ${name}\n`;
+            message += `📞 *Telefon:* ${phone}\n`;
+            message += `📍 *Adres:* ${address}\n`;
+
+            if (mapLink || userLocationLink) {
+                message += `🗺️ *Konum Linki:* ${mapLink || userLocationLink}\n`;
+            }
+
+            message += `💳 *Ödeme Yöntemi:* ${payment}\n`;
+            if (note) {
+                message += `📝 *Not:* ${note}\n`;
+            }
+
+            message += `\n🛒 *SİPARİŞ DETAYLARI:*\n`;
+            for (const [id, qty] of Object.entries(cart)) {
+                const product = products.find(p => p.id === parseInt(id));
+                if (product) {
+                    message += `• ${product.name}: ${qty} kg (${product.price * qty} TL)\n`;
+                }
+            }
+
+            message += `\n💰 *TOPLAM TUTAR:* ${total} TL`;
+
+            const whatsappNumber = "905462784136";
+            const encodedMsg = encodeURIComponent(message);
+            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMsg}`, "_blank");
+        }
+    </script>
+</body>
+</html>
